@@ -8,21 +8,30 @@ local _instance --to be singleton
 
 local loadedPackages: { [string]: Package }
 
-local Public = {}
 local Private = {}
-Private.__index = Private
+local Public = {}
+Public.__index = Public
 
 type Package = {
+	Name: string,
 	Setup: () -> nil,
 	Start: () -> nil,
 	Contents: { [any]: any },
 }
 
-function Public:Import(package: string)
+--Get the module loader
+function Public.Get()
+	if not _instance then
+		_instance = setmetatable({}, Public)
+	end
+	return _instance
+end
+
+function Public.Import(package: string)
 	return loadedPackages[package].Contents
 end
 
-function Public:Export(pkgName: string, contents: any)
+function Public.Export(pkgName: string, contents: any)
 	Private._loadPackage(pkgName, contents)
 end
 
@@ -37,6 +46,7 @@ function Private._loadPackage(pkgName: string, contents: any)
 		result.start = nil
 
 		local package: Package = {
+			Name = pkgName,
 			Setup = (type(_setup) == "function") and _setup,
 			Start = (type(_start) == "function") and _start,
 			Contents = result,
@@ -57,26 +67,7 @@ function Private._loadStartup()
 		if unloadedPackage.ClassName ~= "Module" then
 			continue
 		end
-
-		local s, result = pcall(require, unloadedPackage) -- use pcall to avoid halting runtime
-
-		if s then
-			local _setup = result.setup
-			local _start = result.start
-
-			result.setup = nil
-			result.start = nil
-
-			local package: Package = {
-				Setup = (type(_setup) == "function") and _setup,
-				Start = (type(_start) == "function") and _start,
-				Contents = result,
-			}
-
-			loadedPackages[unloadedPackage.Name] = package
-		else
-			warn(`FAILED LOADING {_isServer and "' SERVER '" or "' CLIENT '"} PACKAGE: {unloadedPackage.Name}`)
-		end
+		Private._loadPackage(unloadedPackage.Name, unloadedPackage)
 	end
 
 	-- Setup phase
@@ -92,4 +83,4 @@ end
 
 Private._loadStartup()
 
-return setmetatable({}, Public)
+return Public.Get
