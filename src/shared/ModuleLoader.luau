@@ -36,6 +36,8 @@ function Public.Export(pkgName: string, contents: any)
 end
 
 function Private._loadPackage(pkgName: string, contents: any)
+	Public.InfoLog = `Loading package: {pkgName}`
+
 	local s, result = pcall(require, contents) -- use pcall to avoid halting runtime
 
 	if s then
@@ -53,18 +55,24 @@ function Private._loadPackage(pkgName: string, contents: any)
 		}
 
 		loadedPackages[pkgName] = package
+
+		Public.InfoLog = `Successfully loaded package: {pkgName}`
 	else
-		warn(`FAILED LOADING {_isServer and "' SERVER '" or "' CLIENT '"} PACKAGE: {pkgName}; {result}`)
+		Public.InfoLog = `Failed loading package: {pkgName}`
+		warn(`Failed loading {_isServer and "' SERVER '" or "' CLIENT '"} PACKAGE: {pkgName}; {result}`)
 	end
 end
 
 function Private._loadStartup()
-	local unloadedPackages = _root:GetChildren()
+	-- Shit for loading purposes
+	Public.InfoLog = ""
+	Public.RunContext = _isServer and "SERVER" or "CLIENT"
 
+	local unloadedPackages = _root:GetChildren()
 	loadedPackages = {}
 
 	for _, unloadedPackage in unloadedPackages do
-		if unloadedPackage.ClassName ~= "Module" then
+		if unloadedPackage.ClassName ~= "ModuleScript" then
 			continue
 		end
 		Private._loadPackage(unloadedPackage.Name, unloadedPackage)
