@@ -4,12 +4,16 @@
     "$ignoreUnknownInstances": true,
     "$className": "DataModel",
     "ReplicatedStorage": {
-      "$ignoreUnknownInstances": true,
       "Shared": {
+        "$ignoreUnknownInstances": true,
         "$path": "src/shared"
       },
       "Packages": {
         "$path": "Packages"
+      },
+      "Assets": {
+        "$className": "Folder",
+        "$ignoreUnknownInstances": true
       }
     },
     "ServerScriptService": {
