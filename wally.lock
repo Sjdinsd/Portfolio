@@ -3,11 +3,6 @@
 registry = "test"
 
 [[package]]
-name = "evaera/cmdr"
-version = "1.12.0"
-dependencies = []
-
-[[package]]
-name = "sjdinsd/portfolio"
+name = "sjdinsd/template"
 version = "0.1.0"
-dependencies = [["cmdr", "evaera/cmdr@1.12.0"]]
+dependencies = []

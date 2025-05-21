@@ -9,11 +9,11 @@ This template focues on request and event based controllers, singletons, etc.. L
 - Modular.
 - Easily scalabe.
 - Built with rojo, wally, and moonwave (who doesn't love documentation)
-- Uses selene and stylua (CONSISTENCY 👏)
+- Uses selene and stylua (CONSISTENCY)
 - Provides everything needed to create a game:
     - Input management
     - Clever UI organization
     - A good collection of packages
-
+    
 ### - Meh Things
-- idfk
+- idk

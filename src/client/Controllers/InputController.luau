@@ -1,7 +1,16 @@
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local Player = Players.LocalPlayer
+
+local unloadedInputContexts = ReplicatedStorage.Assets.ActionMaps:GetChildren()
+
+local _activeInputContext: InputContext
+
 --[=[
-	@class InputController
+    @class InputController
     
-	Public class representing the Input Controller
+    Client Input Controller using the (as of now) beta [IAS](https://devforum.roblox.com/t/studio-beta-new-input-action-system/3656214?u=kaister70000)
 ]=]
 local Private = {}
 local InputController = {}
@@ -16,7 +25,7 @@ InputController.__index = InputController
 function InputController.ActivateInputContext(context: string)
 	-- Set the current activated input context to false
 	-- Set the specified one to true
-	-- Hope ts works its in beta
+	-- Hope ts works, its in beta
 end
 
 --[=[
