@@ -6,16 +6,16 @@ local _isServer = RunService:IsServer()
 local _root = _isServer and ServerScriptService.Singletons or Players.LocalPlayer.PlayerScripts.Controllers
 local _instance --to be singleton
 
-local loadedPackages: { [string]: Package }
+local loadedPackages: { [string]: Package<any, any> }
 
 local Private = {}
 local Public = {}
 Public.__index = Public
 
-type Package = {
+type Package<A, B> = {
 	Name: string,
-	Setup: () -> nil,
-	Start: () -> nil,
+	Setup: A,
+	Start: B,
 	Contents: { [any]: any },
 }
 
@@ -47,10 +47,10 @@ function Private._loadPackage(pkgName: string, contents: any)
 		result.setup = nil
 		result.start = nil
 
-		local package: Package = {
+		local package: Package<any, any> = {
 			Name = pkgName,
-			Setup = (type(_setup) == "function") and _setup,
-			Start = (type(_start) == "function") and _start,
+			Setup = (type(_setup) == "function") and _setup or nil,
+			Start = (type(_start) == "function") and _start or nil,
 			Contents = result,
 		}
 
@@ -80,11 +80,17 @@ function Private._loadStartup()
 
 	-- Setup phase
 	for _: string, package in loadedPackages do
+		if package.Setup == nil then
+			continue
+		end
 		package.Setup()
 	end
 
 	-- Start phase
 	for _: string, package in loadedPackages do
+		if package.Start == nil then
+			continue
+		end
 		package.Start()
 	end
 end

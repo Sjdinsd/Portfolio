@@ -8,4 +8,3 @@ realm = "shared"
 cmdr = "evaera/cmdr@1.12.0"
 
 [server-dependencies]
-janitor = "howmanysmall/janitor@1.18.3"
