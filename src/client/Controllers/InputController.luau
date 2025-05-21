@@ -2,8 +2,12 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Player = Players.LocalPlayer
+local GUI = Player.PlayerGui
 
 local unloadedInputContexts = ReplicatedStorage.Assets.ActionMaps:GetChildren()
+local loadedInputContexts: { [string]: InputContext }
+
+local DEFAULT_ACTIVE_INPUT_CONTEXT = "UI"
 
 local _activeInputContext: InputContext
 
@@ -31,11 +35,36 @@ end
 --[=[
 	Returns a dictionary from the active InputContext with the keycode being the key, and its name being the value.
 
-	@return {} -- {[KeyCode] : string}
+	@return {} : {[number] : InputBinding}
 ]=]
-function InputController.GetActiveBinds() end
+function InputController.GetActiveBinds()
+	local activeBinds = {}
 
--- Loads from replicated storage to player ui
-function Private.LoadInputActionConexts() end
+	for _, inputBinding: Instance in _activeInputContext:GetChildren() do
+		if inputBinding.ClassName ~= "InputBinding" then
+			continue
+		end
+		table.insert(activeBinds, inputBinding)
+	end
+
+	return activeBinds
+end
+
+-- Loads from InputContexts to player ui
+function InputController.setup()
+	loadedInputContexts = {}
+	for _, inputContext: InputContext in unloadedInputContexts do
+		inputContext.Enabled = false
+		inputContext.Parent = GUI.Input
+
+		loadedInputContexts[inputContext.Name] = inputContext
+	end
+end
+
+-- set the active input context and go
+function InputController.start()
+	_activeInputContext = loadedInputContexts[DEFAULT_ACTIVE_INPUT_CONTEXT]
+	_activeInputContext.Enabled = true
+end
 
 return InputController

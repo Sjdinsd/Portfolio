@@ -6,37 +6,59 @@ local _isServer = RunService:IsServer()
 local _root = _isServer and ServerScriptService.Singletons or Players.LocalPlayer.PlayerScripts.Controllers
 local _instance --to be singleton
 
-local loadedPackages: { [string]: Package<any, any> }
+local loadedModules: { [string]: Module<any, any> }
 
+--[=[
+    @class ModuleLoader
+    
+    Module loader for both client and server
+]=]
 local Private = {}
-local Public = {}
-Public.__index = Public
+local ModuleLoader = {}
+ModuleLoader.__index = ModuleLoader
 
-type Package<A, B> = {
+type Module<A, B> = {
 	Name: string,
 	Setup: A,
 	Start: B,
 	Contents: { [any]: any },
 }
 
---Get the module loader
-function Public.Get()
+--[=[
+	Gets the module loader singleton for imports and exports
+    
+	@return any -- The required module loader
+]=]
+function ModuleLoader.Get()
 	if not _instance then
-		_instance = setmetatable({}, Public)
+		_instance = setmetatable({}, ModuleLoader)
 	end
 	return _instance
 end
 
-function Public.Import(package: string)
-	return loadedPackages[package].Contents
+--[=[
+	Imports module into the current script
+    
+	@param package : string -- The wanted module's name
+	@return any -- The wanted module
+]=]
+function ModuleLoader.Import(package: string)
+	return loadedModules[package].Contents
 end
 
-function Public.Export(pkgName: string, contents: any)
-	Private._loadPackage(pkgName, contents)
+--[=[
+	Exports module into the module loader, available for other scripts to access
+    
+	@param pkgName : string -- The new module's name
+	@param contents : any -- The wanted module's content
+	@return any -- The wanted module
+]=]
+function ModuleLoader.Export(pkgName: string, contents: any)
+	Private._loadModule(pkgName, contents)
 end
 
-function Private._loadPackage(pkgName: string, contents: any)
-	Public.InfoLog = `Loading package: {pkgName}`
+function Private._loadModule(pkgName: string, contents: any)
+	ModuleLoader.InfoLog = `Loading package: {pkgName}`
 
 	local s, result = pcall(require, contents) -- use pcall to avoid halting runtime
 
@@ -47,39 +69,41 @@ function Private._loadPackage(pkgName: string, contents: any)
 		result.setup = nil
 		result.start = nil
 
-		local package: Package<any, any> = {
+		local package: Module<any, any> = {
 			Name = pkgName,
 			Setup = (type(_setup) == "function") and _setup or nil,
 			Start = (type(_start) == "function") and _start or nil,
 			Contents = result,
 		}
 
-		loadedPackages[pkgName] = package
+		loadedModules[pkgName] = package
 
-		Public.InfoLog = `Successfully loaded package: {pkgName}`
+		ModuleLoader.InfoLog = `Successfully loaded package: {pkgName}`
 	else
-		Public.InfoLog = `Failed loading package: {pkgName}`
+		ModuleLoader.InfoLog = `Failed loading package: {pkgName}`
 		warn(`Failed loading {_isServer and "' SERVER '" or "' CLIENT '"} PACKAGE: {pkgName}; {result}`)
 	end
 end
 
 function Private._loadStartup()
 	-- Shit for loading purposes
-	Public.InfoLog = ""
-	Public.RunContext = _isServer and "SERVER" or "CLIENT"
+	ModuleLoader.InfoLog = ""
+	ModuleLoader.RunContext = _isServer and "SERVER" or "CLIENT"
+	ModuleLoader.FinishedLoadingModules = false
 
-	local unloadedPackages = _root:GetChildren()
-	loadedPackages = {}
+	local unloadedModules = _root:GetChildren()
+	loadedModules = {}
 
-	for _, unloadedPackage in unloadedPackages do
-		if unloadedPackage.ClassName ~= "ModuleScript" then
+	for _, unloadedModule in unloadedModules do
+		if unloadedModule.ClassName ~= "ModuleScript" then
 			continue
 		end
-		Private._loadPackage(unloadedPackage.Name, unloadedPackage)
+		Private._loadModule(unloadedModule.Name, unloadedModule)
 	end
 
 	-- Setup phase
-	for _: string, package in loadedPackages do
+	for _: string, package in loadedModules do
+		ModuleLoader.InfoLog = "Setting up package"
 		if package.Setup == nil then
 			continue
 		end
@@ -87,14 +111,14 @@ function Private._loadStartup()
 	end
 
 	-- Start phase
-	for _: string, package in loadedPackages do
-		if package.Start == nil then
+	for _: string, module in loadedModules do
+		if module.Start == nil then
 			continue
 		end
-		package.Start()
+		module.Start()
 	end
 end
 
 Private._loadStartup()
 
-return Public.Get
+return ModuleLoader.Get
