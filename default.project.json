@@ -6,7 +6,16 @@
     "ReplicatedStorage": {
       "Shared": {
         "$ignoreUnknownInstances": true,
-        "$path": "src/shared"
+        "$path": "src/shared",
+        "ModuleLoader": {
+          "$className": "ModuleScript",
+          "serverSingletonLoader": {
+            "$className": "Script",
+            "$properties": {
+              "RunContext": "Legacy"
+            }
+          }
+        }
       },
       "Packages": {
         "$path": "Packages"

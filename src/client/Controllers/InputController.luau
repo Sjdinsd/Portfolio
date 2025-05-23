@@ -177,7 +177,7 @@ end
 --[=[
 	Adds a new [InputAction] to a specified [InputContext] with optional binds
 
-	@param context string | InputContext -- Name of the context, or the context itself to bind to
+	@param context string | InputContext -- Name of the context, or the context itself
 	@param actionName string -- Name of the [InputAction]
 	@param enabled boolean?
 	@param actionType Enum.InputActionType? 
