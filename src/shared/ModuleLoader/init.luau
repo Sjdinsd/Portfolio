@@ -17,10 +17,10 @@ local Private = {}
 local ModuleLoader = {}
 ModuleLoader.__index = ModuleLoader
 
-type Module<A, B> = {
+type Module = {
 	Name: string,
-	Setup: A,
-	Start: B,
+	Setup: () -> () | nil,
+	Start: () -> () | nil,
 	Contents: { [any]: any },
 }
 
@@ -69,7 +69,7 @@ function Private._loadModule(pkgName: string, contents: any)
 		result.setup = nil
 		result.start = nil
 
-		local package: Module<any, any> = {
+		local package: Module = {
 			Name = pkgName,
 			Setup = (type(_setup) == "function") and _setup or nil,
 			Start = (type(_start) == "function") and _start or nil,
